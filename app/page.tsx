@@ -199,7 +199,7 @@ export default function Home() {
           {/* Mobile Toggle: View Feed */}
           <button
             onClick={() => setViewMode('feed')}
-            className="md:hidden absolute top-4 right-4 z-[400] bg-bg-card border border-border-main p-3 rounded-full shadow-lg"
+            className="md:hidden absolute top-4 right-4 z-400 bg-bg-card border border-border-main p-3 rounded-full shadow-lg"
           >
             <span className="font-bold text-xs">FEED</span>
           </button>
@@ -207,7 +207,7 @@ export default function Home() {
 
         {/* Right Side: Sidebar / Feed (Hidden on mobile unless viewMode is feed) */}
         <div className={`
-          md:w-[400px] border-l border-border-main bg-bg-secondary flex flex-col z-20 
+          md:w-100 border-l border-border-main bg-bg-secondary flex flex-col z-20 
           ${viewMode === 'feed' ? 'w-full absolute inset-0 md:static' : 'hidden md:flex'}
         `}>
           <div className="p-4 border-b border-border-main flex justify-between items-center md:hidden">
