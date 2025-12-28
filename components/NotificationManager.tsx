@@ -96,7 +96,8 @@ export default function NotificationManager({ className, variant = "ghost" }: No
 
     } catch (err: any) {
       console.error('Failed to subscribe the user: ', err);
-      if (Notification.permission === 'denied') {
+      
+      if ((Notification.permission as NotificationPermission) === 'denied') {
         alert("Notifications are blocked. Please enable them in your browser settings (click the lock icon in the address bar).");
       } else {
         alert(`Failed to subscribe: ${err.message || "Unknown error"}. Check console for details.`);
