@@ -26,6 +26,7 @@ export default function LoginPage() {
         address: '',
     });
 
+<<<<<<< HEAD
     const handleRoleSelect = (role: 'CITIZEN' | 'RESPONDER' | 'EMPLOYEE') => {
         setSelectedRole(role);
         setError('');
@@ -167,6 +168,14 @@ export default function LoginPage() {
             setError(err instanceof Error ? err.message : 'An error occurred during sign in');
         } finally {
             setIsLoading(false);
+=======
+    const handleLogin = (role: 'user' | 'responder' | 'employee') => {
+        login(role);
+        if (role === 'user') {
+            router.push('/dashboard');
+        } else {
+            router.push('/responder'); // Employees and Responders go to responder view
+>>>>>>> 5767dc6a71a846327bd0f8c309bdeb59331ede46
         }
     };
 
@@ -312,7 +321,11 @@ export default function LoginPage() {
                             variant="outline"
                             size="lg"
                             className="w-full justify-start h-16 text-left relative overflow-hidden group"
+<<<<<<< HEAD
                             onClick={() => handleRoleSelect('CITIZEN')}
+=======
+                            onClick={() => handleLogin('user')}
+>>>>>>> 5767dc6a71a846327bd0f8c309bdeb59331ede46
                             leftIcon={<User className="mr-3" />}
                         >
                             <div className="flex flex-col items-start z-10 w-full">
@@ -326,7 +339,11 @@ export default function LoginPage() {
                             variant="outline"
                             size="lg"
                             className="w-full justify-start h-16 text-left relative overflow-hidden group hover:border-alert-high hover:text-alert-high"
+<<<<<<< HEAD
                             onClick={() => handleRoleSelect('RESPONDER')}
+=======
+                            onClick={() => handleLogin('responder')}
+>>>>>>> 5767dc6a71a846327bd0f8c309bdeb59331ede46
                             leftIcon={<Shield className="mr-3" />}
                         >
                             <div className="flex flex-col items-start z-10 w-full">
@@ -340,7 +357,11 @@ export default function LoginPage() {
                             variant="outline"
                             size="lg"
                             className="w-full justify-start h-16 text-left relative overflow-hidden group hover:border-status-assigned hover:text-status-assigned"
+<<<<<<< HEAD
                             onClick={() => handleRoleSelect('EMPLOYEE')}
+=======
+                            onClick={() => handleLogin('employee')}
+>>>>>>> 5767dc6a71a846327bd0f8c309bdeb59331ede46
                             leftIcon={<Briefcase className="mr-3" />}
                         >
                             <div className="flex flex-col items-start z-10 w-full">
