@@ -100,7 +100,7 @@ export default function EmployeeDashboard() {
 
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                 {/* Left Panel - Tasks List */}
-                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto">
+                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto no-scrollbar">
                     <div className="p-4 border-b border-border-main">
                         <h3 className="text-lg font-semibold text-text-primary">Assigned Tasks</h3>
                     </div>

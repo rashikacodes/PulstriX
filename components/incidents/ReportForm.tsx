@@ -372,7 +372,7 @@ export function ReportForm() {
                                 </button>
 
                                 {showSuggestions && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-bg-secondary border border-border-main rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-bg-secondary border border-border-main rounded-lg shadow-lg max-h-60 overflow-y-auto z-50 no-scrollbar">
                                         {suggestions.map((suggestion, index) => (
                                             <button
                                                 key={index}

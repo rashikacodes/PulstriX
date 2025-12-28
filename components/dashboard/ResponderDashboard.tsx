@@ -167,7 +167,7 @@ export default function ResponderDashboard() {
 
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                 {/* Left Panel - Reports List */}
-                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto">
+                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto no-scrollbar">
                     <div className="p-4 border-b border-border-main">
                         <h3 className="text-lg font-semibold text-text-primary">Recent Reports</h3>
                     </div>
@@ -224,7 +224,7 @@ export default function ResponderDashboard() {
                 </div>
 
                 {/* Right Panel - Available Employees */}
-                <div className="w-full md:w-80 border-l border-border-main bg-bg-card overflow-y-auto">
+                <div className="w-full md:w-80 border-l border-border-main bg-bg-card overflow-y-auto no-scrollbar">
                     <div className="p-4 border-b border-border-main">
                         <h3 className="text-lg font-semibold text-text-primary flex items-center">
                             <Users className="mr-2 text-primary" size={18} /> Available Employees

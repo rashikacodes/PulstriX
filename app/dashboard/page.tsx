@@ -141,7 +141,7 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="h-screen pt-24 relative flex flex-col md:flex-row overflow-hidden bg-bg-main">
+        <div className="h-screen relative flex flex-col md:flex-row overflow-hidden bg-bg-main">
             {/* Left Panel - Incidents List */}
             <div className={`
                 absolute md:relative z-20 w-full md:w-96 bg-bg-card border-r border-border-main transition-all duration-300 flex flex-col h-full shadow-xl
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                                 {reports.length}
                             </span>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                             {loading ? (
                                 <div className="flex justify-center py-8">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                                 {myReports.length}
                             </span>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                             {myReports.length === 0 ? (
                                 <div className="text-center py-8 text-text-muted text-sm">
                                     You haven't reported any incidents yet.

@@ -165,7 +165,7 @@ export default function ResponderPage() {
     };
 
     return (
-        <div className="h-screen pt-24 relative flex flex-col md:flex-row overflow-hidden bg-bg-main">
+        <div className="h-screen relative flex flex-col md:flex-row overflow-hidden bg-bg-main">
 
             {/* Sidebar Panel */}
             <div className={`
@@ -198,7 +198,7 @@ export default function ResponderPage() {
                                 {incidents.length}
                             </span>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                             {isLoading ? (
                                 <div className="flex justify-center py-8">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -227,7 +227,7 @@ export default function ResponderPage() {
                                 {idleEmployees.length}
                             </span>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin scrollbar-thumb-border-main scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar">
                             {idleEmployees.length === 0 ? (
                                 <div className="text-center py-8 text-text-muted text-sm">No active idle units.</div>
                             ) : (
@@ -277,7 +277,7 @@ export default function ResponderPage() {
                             <Button variant="ghost" size="sm" onClick={() => setSelectedIncident(null)}>✕</Button>
                         </div>
 
-                        <div className="p-4 overflow-y-auto space-y-4">
+                        <div className="p-4 overflow-y-auto space-y-4 no-scrollbar">
                             <div className="space-y-2">
                                 <label className="text-xs text-text-secondary uppercase font-semibold">Status & Severity</label>
                                 <div className="grid grid-cols-2 gap-2">
@@ -317,7 +317,7 @@ export default function ResponderPage() {
                                             {idleEmployees.length > 0 ? (
                                                 <div className="border border-border-main rounded-lg divide-y divide-border-main bg-bg-main/50">
                                                     <div className="p-2 bg-bg-secondary text-xs font-semibold text-text-secondary">Available Units</div>
-                                                    <div className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-border-main">
+                                                    <div className="max-h-40 overflow-y-auto no-scrollbar">
                                                         {idleEmployees.map(emp => (
                                                             <div key={emp._id} className="p-2 flex justify-between items-center hover:bg-bg-secondary transition-colors text-sm">
                                                                 <div>

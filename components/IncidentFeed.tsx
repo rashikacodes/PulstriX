@@ -15,7 +15,7 @@ export default function IncidentFeed({ incidents }: IncidentFeedProps) {
                 <p className="text-text-secondary text-sm">Live updates from your area</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                 {incidents.length === 0 ? (
                     <div className="text-center text-text-muted py-10">
                         No incidents reported nearby.

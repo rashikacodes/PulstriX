@@ -65,7 +65,7 @@ export function IncidentDetailsModal({ incident, onClose, onVote, onLocationClic
       </div>
 
       {/* Scrollable Content */}
-      <div className="overflow-y-auto p-6 space-y-6">
+      <div className="overflow-y-auto p-6 space-y-6 no-scrollbar">
         {/* Description */}
         <div>
           <h3 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wider">Description</h3>
