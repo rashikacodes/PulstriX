@@ -27,19 +27,26 @@ export default function NotificationManager({ className, variant = "ghost" }: No
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
+      // Check if already subscribed
+      navigator.serviceWorker.ready.then(function(reg) {
+        setRegistration(reg);
+        reg.pushManager.getSubscription().then(function(sub) {
+          if (sub) {
+            setIsSubscribed(true);
+            setSubscription(sub);
+          }
+        });
+      });
+
+      // Register if not already
       navigator.serviceWorker.register('/sw.js')
         .then(function(reg) {
           console.log('Service Worker Registered', reg);
           setRegistration(reg);
-          reg.pushManager.getSubscription().then(function(sub) {
-            if (sub) {
-              setIsSubscribed(true);
-              setSubscription(sub);
-            }
-          });
         })
         .catch(function(error) {
           console.error('Service Worker Registration Failed', error);
@@ -48,12 +55,25 @@ export default function NotificationManager({ className, variant = "ghost" }: No
   }, []);
 
   const subscribeUser = async () => {
-    if (!registration) return;
-    
-    const applicationServerKey = urlBase64ToUint8Array('BA8JjGcf9qRxBDRt-bhYXLICDRj28tL3izZC-7ZN8vNXh2tkAJfou6a0qwWUHpGbDMOJhSr_NsAjGyybhIITRJo'); 
-
+    setIsLoading(true);
     try {
-      const sub = await registration.pushManager.subscribe({
+      let reg = registration;
+      if (!reg) {
+        console.log("Registration not found, waiting for ready...");
+        reg = await navigator.serviceWorker.ready;
+        setRegistration(reg);
+      }
+
+      if (!reg) {
+        console.error("Service Worker registration failed or not available");
+        alert("Notifications are not supported or service worker failed to load.");
+        setIsLoading(false);
+        return;
+      }
+    
+      const applicationServerKey = urlBase64ToUint8Array('BA8JjGcf9qRxBDRt-bhYXLICDRj28tL3izZC-7ZN8vNXh2tkAJfou6a0qwWUHpGbDMOJhSr_NsAjGyybhIITRJo'); 
+
+      const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey
       });
@@ -68,7 +88,10 @@ export default function NotificationManager({ className, variant = "ghost" }: No
       });
 
     } catch (err) {
-      console.log('Failed to subscribe the user: ', err);
+      console.error('Failed to subscribe the user: ', err);
+      alert("Failed to subscribe to notifications. Please check your browser settings.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -81,6 +104,7 @@ export default function NotificationManager({ className, variant = "ghost" }: No
       size="sm"
       className={className}
       leftIcon={<Bell size={18} />}
+      isLoading={isLoading}
     >
       Enable Notifications
     </Button>
