@@ -2,6 +2,9 @@ import { Hero } from '@/components/home/Hero';
 import { Stats } from '@/components/home/Stats';
 import { EmergencySection } from '@/components/home/EmergencySection';
 import { Card, CardTitle, CardContent } from '@/components/ui/Card';
+import { HowItWorks } from '@/components/home/HowItWorks';
+import { Applications } from '@/components/home/Applications';
+import { Impacts } from '@/components/home/Impacts';
 import { ShieldCheck, Zap, Activity, Users } from 'lucide-react';
 
 export default function Home() {
@@ -33,11 +36,15 @@ export default function Home() {
       <Hero />
       <Stats />
 
+      <EmergencySection />
+
+      <HowItWorks />
+
       {/* Features Section */}
-      <div id="how-it-works" className="py-24 bg-bg-main">
+      <div id="features" className="py-24 bg-bg-main">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Pulstrix Matters</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why PulstriX Matters</h2>
             <p className="text-text-secondary max-w-2xl mx-auto">
               Built for speed, accuracy, and impact. We are changing how communities handle emergencies.
             </p>
@@ -61,7 +68,8 @@ export default function Home() {
         </div>
       </div>
 
-      <EmergencySection />
+      <Applications />
+      <Impacts />
 
       {/* Footer */}
       <footer className="bg-bg-secondary border-t border-border-main py-12">

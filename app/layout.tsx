@@ -4,6 +4,7 @@ import "./globals.css";
 import NotificationManager from "@/components/NotificationManager";
 import { AuthProvider } from "@/context/AuthContext";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,9 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <main className="grow">
-            {children}
+            <PageTransition>
+              {children}
+            </PageTransition>
           </main>
         </AuthProvider>
       </body>
