@@ -5,38 +5,12 @@ import { User, UserRole } from '@/types';
 
 interface AuthContextType {
     user: User | null;
-    login: (role: UserRole) => void;
+    login: (userData: User) => void;
     logout: () => void;
     isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user data
-const MOCK_USERS: Record<UserRole, User> = {
-    CITIZEN: {
-        id: 'u1',
-        name: 'John Demo',
-        email: 'john@example.com',
-        role: 'CITIZEN',
-        phone: '+1234567890'
-    },
-    RESPONDER: {
-        id: 'r1',
-        name: 'Officer Sarah',
-        email: 'sarah@police.dept',
-        role: 'RESPONDER',
-        department: 'Police',
-        accessCode: 'POL-123'
-    },
-    EMPLOYEE: {
-        id: 'e1',
-        name: 'Dave Tech',
-        email: 'dave@maintenance.city',
-        role: 'EMPLOYEE',
-        department: 'Infrastructure'
-    }
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -51,12 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
-    const login = (role: UserRole) => {
-        // Determine which mock user to use based on role
-        // In a real app, this would take credentials
-        const mockUser = MOCK_USERS[role];
-        setUser(mockUser);
-        localStorage.setItem('pulstrix_user', JSON.stringify(mockUser));
+    const login = (userData: User) => {
+        setUser(userData);
+        localStorage.setItem('pulstrix_user', JSON.stringify(userData));
     };
 
     const logout = () => {

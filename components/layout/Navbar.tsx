@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
@@ -30,7 +31,7 @@ export function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
-                        <Activity className="h-8 w-8 text-primary" />
+                        <Image src="/logo.jpeg" alt="Pulstrix Logo" width={32} height={32} className="object-contain rounded" />
                         <span className="text-xl font-bold tracking-tight text-white">Pulstrix</span>
                     </Link>
 
