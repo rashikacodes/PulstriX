@@ -22,6 +22,21 @@ const defaultIcon = L.icon({
     shadowSize: [41, 41]
 });
 
+// Create simple colored circle icons for severity levels
+const createCustomIcon = (color: string) =>
+    L.divIcon({
+        className: 'custom-pin',
+        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid #FFF; box-shadow: 0 0 10px ${color};"></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+    });
+
+const severityIcons: Record<string, L.DivIcon> = {
+    high: createCustomIcon('#EF4444'), // red
+    medium: createCustomIcon('#F97316'), // orange
+    low: createCustomIcon('#22C55E'), // green
+};
+
 // Component to handle map clicks
 function MapEvents({ onLocationSelect }: { onLocationSelect?: (lat: number, lng: number) => void }) {
     useMapEvents({
@@ -89,11 +104,14 @@ export default function LiveMap({
                 />
 
                 {/* Render Incidents */}
-                {incidents.map((incident) => (
+                {incidents.map((incident) => {
+                    const sevKey = (incident.severity || '').toString().toLowerCase();
+                    const icon = severityIcons[sevKey] || defaultIcon;
+                    return (
                     <Marker
                         key={incident._id}
                         position={[incident.location.lat, incident.location.lng]}
-                        icon={defaultIcon}
+                        icon={icon}
                     >
                         <Popup className="leaflet-popup-dark">
                             <div className="text-gray-900">
@@ -103,7 +121,8 @@ export default function LiveMap({
                             </div>
                         </Popup>
                     </Marker>
-                ))}
+                    );
+                })}
 
                 {/* Render Selected Location (for Reporting) */}
                 {selectedLocation && (
