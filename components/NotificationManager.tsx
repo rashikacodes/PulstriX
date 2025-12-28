@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button';
 import { Bell } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -24,6 +25,7 @@ interface NotificationManagerProps {
 }
 
 export default function NotificationManager({ className, variant = "ghost" }: NotificationManagerProps) {
+  const { user } = useAuth();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
@@ -55,6 +57,11 @@ export default function NotificationManager({ className, variant = "ghost" }: No
   }, []);
 
   const subscribeUser = async () => {
+    if (Notification.permission === 'denied') {
+      alert("Notifications are blocked. Please enable them in your browser settings.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       let reg = registration;
@@ -87,14 +94,19 @@ export default function NotificationManager({ className, variant = "ghost" }: No
         headers: { 'Content-Type': 'application/json' }
       });
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to subscribe the user: ', err);
-      alert("Failed to subscribe to notifications. Please check your browser settings.");
+      if (Notification.permission === 'denied') {
+        alert("Notifications are blocked. Please enable them in your browser settings (click the lock icon in the address bar).");
+      } else {
+        alert(`Failed to subscribe: ${err.message || "Unknown error"}. Check console for details.`);
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
+  if (!user) return null;
   if (isSubscribed) return null;
 
   return (
