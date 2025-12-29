@@ -1,4 +1,3 @@
-cat > README.md <<EOF
 # 🚨 PulstriX: Intelligent Emergency Response System
 
 ![PulstriX Banner](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
@@ -316,4 +315,3 @@ Built with ❤️ by **Team HackerEyes**
 ---
 
 *PulstriX - Saving seconds, saving lives.*
-EOF
