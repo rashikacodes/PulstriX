@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Report } from '@/types';
-import IncidentCard from './IncidentCard';
-import IncidentDetailsModal from './IncidentDetailsModal';
+import {IncidentCard} from './IncidentCard';
+import {IncidentDetailsModal} from './IncidentDetailsModal';
 import { Loader2 } from 'lucide-react';
 
 
@@ -30,31 +30,39 @@ export function IncidentFeed() {
         };
 
         fetchIncidents();
-        
-        // Poll for updates every 30 seconds
+
         const interval = setInterval(fetchIncidents, 30000);
         return () => clearInterval(interval);
     }, []);
 
     const handleVote = async (e: React.MouseEvent, reportId: string, action: 'upvote' | 'downvote') => {
-        e.stopPropagation(); // Prevent card click
+        e.stopPropagation();
         if (isVoting) return;
+
+        const sessionId = localStorage.getItem("sessionId");
+        if (!sessionId) {
+            alert("Session ID missing. Please refresh the page.");
+            return;
+        }
+
         setIsVoting(true);
         try {
             const response = await fetch('/api/vote', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reportId, action })
+                body: JSON.stringify({ reportId, action, sessionId })
             });
             const data = await response.json();
             if (data.success) {
-                // Update local state
+        
                 setIncidents(prev => prev.map(inc => 
                     inc._id === reportId ? data.data : inc
                 ));
                 if (selectedIncident && selectedIncident._id === reportId) {
                     setSelectedIncident(data.data);
                 }
+            } else {
+                alert(data.error || "Vote failed");
             }
         } catch (error) {
             console.error("Vote failed:", error);
@@ -83,7 +91,7 @@ export function IncidentFeed() {
                     <IncidentCard 
                         key={incident._id} 
                         incident={incident} 
-                        onClick={setSelectedIncident}
+                        onClick={(e, incident) => setSelectedIncident(incident)}
                         onVote={handleVote}
                     />
                 ))
@@ -93,7 +101,7 @@ export function IncidentFeed() {
                 <p className="text-xs text-text-secondary">File a new report on the right.</p>
             </div>
 
-            {/* Incident Details Modal */}
+
             {selectedIncident && (
                 <IncidentDetailsModal 
                     incident={selectedIncident} 

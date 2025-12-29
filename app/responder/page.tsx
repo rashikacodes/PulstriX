@@ -1,171 +1,248 @@
 'use client';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Report, ReportStatus, ReportSeverity } from '@/types';
+import React, { useState, useEffect } from 'react';
+
 import { useAuth } from '@/context/AuthContext';
-import { Filter, Siren, CheckCircle, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Report } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import {
+    Users,
+    MapPin,
+    Shield,
+    ChevronDown,
+    ChevronUp,
+    Phone,
+    Mail,
+    Plus,
+    Building
+} from 'lucide-react';
 
-const LiveMap = dynamic(() => import('@/components/map/LiveMap'), {
-    loading: () => <div className="h-full w-full bg-bg-secondary animate-pulse" />,
-    ssr: false
-});
 
-const MOCK_ASSIGNED_INCIDENTS: Report[] = [
-    {
-        _id: '101',
-        sessionId: 'session_101',
-        type: 'Crime',
-        description: 'Break-in reported at Jewelry Store.',
-        location: { lat: 20.296, lng: 85.824 },
-        severity: 'high',
-        status: 'assigned',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        upvotes: 15,
-        downvotes: 0,
-        duplicates: 0,
-    },
-    {
-        _id: '102',
-        sessionId: 'session_102',
-        type: 'Accident',
-        description: 'Minor collision, no injuries.',
-        location: { lat: 20.292, lng: 85.828 },
-        severity: 'low',
-        status: 'verified',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        upvotes: 2,
-        downvotes: 0,
-        duplicates: 0,
-    }
-];
 
 export default function ResponderPage() {
-    const { user } = useAuth();
-    const [incidents, setIncidents] = useState<Report[]>(MOCK_ASSIGNED_INCIDENTS);
-    const [selectedIncident, setSelectedIncident] = useState<Report | null>(null);
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
 
-    const handleStatusUpdate = (id: string, newStatus: ReportStatus) => {
-        setIncidents(prev => prev.map(inc =>
-            inc._id === id ? { ...inc, status: newStatus } : inc
-        ));
-        // In real implementation:
-        // await fetch(`/api/incidents/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+    
+    const [incidents, setIncidents] = useState<Report[]>([]);
+    const [employees, setEmployees] = useState<any[]>([]);
+    const [showEmployees, setShowEmployees] = useState(false);
+    const [newEmployeeEmail, setNewEmployeeEmail] = useState('');
+    const [isAddingEmployee, setIsAddingEmployee] = useState(false);
+
+    
+    useEffect(() => {
+        if (!isLoading && (!user || user.role !== 'responder')) {
+            router.push('/login');
+        }
+    }, [user, isLoading, router]);
+
+    
+    useEffect(() => {
+        const fetchIncidents = async () => {
+            try {
+                const res = await fetch('/api/report');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        setIncidents(data.data);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch incidents', error);
+            }
+        };
+
+        fetchIncidents();
+    }, []);
+
+    
+    const fetchEmployees = async () => {
+        if (!user?._id) return;
+        try {
+            const res = await fetch(`/api/responder/employees?responderId=${user._id}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    setEmployees(data.data);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch employees', error);
+        }
     };
 
-    const canVerify = user?.role === 'responder';
-    const canAssign = user?.role === 'responder';
-    const canResolve = user?.role === 'responder' || user?.role === 'employee';
+    const handleAddEmployee = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user?._id || !newEmployeeEmail) return;
+
+        setIsAddingEmployee(true);
+        try {
+            const res = await fetch('/api/addEmployees', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    responderId: user._id,
+                    emails: [newEmployeeEmail]
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                alert('Employee added successfully!');
+                setNewEmployeeEmail('');
+                fetchEmployees(); 
+            } else {
+                alert(data.message || 'Failed to add employee');
+            }
+        } catch (error) {
+            alert('Error adding employee');
+        } finally {
+            setIsAddingEmployee(false);
+        }
+    };
+
+    if (isLoading || !user) return <div className="min-h-screen bg-bg-main pt-24 flex items-center justify-center text-white">Loading...</div>;
+
+    
+    const resolvedCount = incidents.filter(inc => {
+        const lastResponderId = inc.responderId && inc.responderId.length > 0 
+            ? inc.responderId[inc.responderId.length - 1] 
+            : null;
+        return inc.status === 'resolved' && lastResponderId === user._id;
+    }).length;
+
+    const assignedCount = incidents.filter(inc => {
+        const lastResponderId = inc.responderId && inc.responderId.length > 0 
+            ? inc.responderId[inc.responderId.length - 1] 
+            : null;
+        return inc.status !== 'resolved' && lastResponderId === user._id;
+    }).length;
 
     return (
-        <div className="h-[calc(100vh-64px)] flex flex-col md:flex-row bg-bg-main overflow-hidden">
-
-            {/* Sidebar: Incident List */}
-            <div className="w-full md:w-96 border-r border-border-main bg-bg-card flex flex-col h-full">
-                <div className="p-4 border-b border-border-main bg-bg-secondary">
-                    <h2 className="text-xl font-bold text-white flex items-center">
-                        <Siren className="mr-2 text-alert-critical" />
-                        {user?.role === 'employee' ? 'My Tasks' : 'Dispatch Center'}
-                    </h2>
-                    <div className="flex gap-2 mt-4 overflow-x-auto">
-                        <Button size="sm" variant="primary" className="text-xs">All</Button>
-                        <Button size="sm" variant="outline" className="text-xs">Critical</Button>
-                        <Button size="sm" variant="outline" className="text-xs">Assigned</Button>
+        <div className="min-h-screen bg-bg-main flex items-center justify-center p-4">
+            <Card className="w-full max-w-2xl bg-bg-card border-border-main shadow-xl">
+                <CardHeader className="border-b border-border-main">
+                    <CardTitle className="text-2xl text-center text-white flex items-center justify-center gap-3">
+                        <Shield className="text-primary" size={32} />
+                        Responder Profile
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-8 pt-6">
+                    {}
+                    <div className="flex flex-col items-center space-y-3">
+                        <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-primary border-2 border-primary/20">
+                            <span className="text-3xl font-bold">{user.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div className="text-center">
+                            <h2 className="text-2xl font-bold text-white">{user.name}</h2>
+                            <p className="text-text-secondary font-medium flex items-center gap-1 justify-center"><Building size={16} />{user.department || 'Emergency Response Unit'}</p>
+                        </div>
+                        
+                        <div className="flex flex-wrap justify-center gap-4 mt-2">
+                            {user.address && (
+                                <div className="flex items-center gap-2 text-text-muted bg-bg-main px-3 py-1.5 rounded-full border border-border-main">
+                                    <MapPin size={16} />
+                                    <span className="text-sm">{user.address}</span>
+                                </div>
+                            )}
+                            {user.location && (
+                                <div className="flex items-center gap-2 text-text-muted bg-bg-main px-3 py-1.5 rounded-full border border-border-main">
+                                    <MapPin size={16} />
+                                    <span className="text-sm">Lat: {user.location.lat.toFixed(4)}, Lng: {user.location.lng.toFixed(4)}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {incidents.map(incident => (
-                        <div
-                            key={incident._id}
-                            onClick={() => setSelectedIncident(incident)}
-                            className={`p-4 rounded-lg border cursor-pointer transition-all ${selectedIncident?._id === incident._id
-                                ? 'bg-primary/10 border-primary'
-                                : 'bg-bg-secondary border-border-main hover:border-primary/50'
-                                }`}
+                    {}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-bg-main p-6 rounded-xl border border-border-main text-center hover:border-status-resolved/50 transition-colors">
+                            <div className="text-4xl font-bold text-status-resolved mb-1">{resolvedCount}</div>
+                            <div className="text-sm text-text-muted font-medium uppercase tracking-wide">Resolved Incidents</div>
+                        </div>
+                        <div className="bg-bg-main p-6 rounded-xl border border-border-main text-center hover:border-primary/50 transition-colors">
+                            <div className="text-4xl font-bold text-primary mb-1">{assignedCount}</div>
+                            <div className="text-sm text-text-muted font-medium uppercase tracking-wide">Active Assignments</div>
+                        </div>
+                    </div>
+
+                    {}
+                    <div className="space-y-4 pt-4 border-t border-border-main">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                <Users size={20} /> Team Management
+                            </h3>
+                        </div>
+
+                        {}
+                        <div className="bg-bg-main p-4 rounded-lg border border-border-main">
+                            <label className="text-sm text-text-secondary mb-2 block">Add New Team Member</label>
+                            <form onSubmit={handleAddEmployee} className="flex gap-2">
+                                <Input
+                                    placeholder="Enter employee email address"
+                                    value={newEmployeeEmail}
+                                    onChange={(e) => setNewEmployeeEmail(e.target.value)}
+                                    type="email"
+                                    className="flex-1"
+                                />
+                                <Button className='flex gap-1' type="submit" isLoading={isAddingEmployee}>
+                                   <Plus size={16} /> <span>Add</span>
+                                </Button>
+                            </form>
+                        </div>
+
+                        {}
+                        <Button
+                            variant="outline"
+                            className="w-full justify-between"
+                            onClick={() => {
+                                setShowEmployees(!showEmployees);
+                                if (!showEmployees && employees.length === 0) fetchEmployees();
+                            }}
                         >
-                            <div className="flex justify-between items-start mb-2">
-                                <Badge priority={incident.severity}>{incident.type}</Badge>
-                                <Badge variant="outline" status={incident.status}>{incident.status}</Badge>
-                            </div>
-                            <p className="text-sm text-text-primary mb-2 line-clamp-2">{incident.description}</p>
-                            <div className="text-xs text-text-secondary flex justify-between">
-                                <span>ID: #{incident._id}</span>
-                                <span>{new Date(incident.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                            <span>View Team Members ({employees.length})</span>
+                            {showEmployees ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </Button>
 
-            {/* Main View: Map & Detail Panel */}
-            <div className="flex-1 relative flex flex-col">
-                <div className="flex-1 relative">
-                    <LiveMap
-                        incidents={incidents}
-                        center={selectedIncident ? [selectedIncident.location.lat, selectedIncident.location.lng] : undefined}
-                        zoom={selectedIncident ? 16 : 13}
-                    />
-                </div>
-
-                {/* Selected Incident Action Panel (Bottom Overlay) */}
-                {selectedIncident && (
-                    <div className="bg-bg-card border-t border-border-main p-6 shadow-xl z-10">
-                        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <div>
-                                <h3 className="text-lg font-bold text-white flex items-center">
-                                    Incident #{selectedIncident._id}
-                                    <span className="ml-3 text-sm font-normal text-text-secondary">
-                                        {selectedIncident.type}
-                                    </span>
-                                </h3>
-                                <p className="text-text-secondary mt-1 max-w-xl">{selectedIncident.description}</p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                {canVerify && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={selectedIncident.status === 'verified'}
-                                        onClick={() => handleStatusUpdate(selectedIncident._id, 'verified')}
-                                    >
-                                        Verify
-                                    </Button>
-                                )}
-                                {canAssign && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="border-status-assigned text-status-assigned hover:bg-status-assigned/10"
-                                        disabled={selectedIncident.status === 'assigned'}
-                                        onClick={() => handleStatusUpdate(selectedIncident._id, 'assigned')}
-                                    >
-                                        Assign Unit
-                                    </Button>
-                                )}
-                                {canResolve && (
-                                    <Button
-                                        variant="success"
-                                        size="sm"
-                                        disabled={selectedIncident.status === 'resolved'}
-                                        onClick={() => handleStatusUpdate(selectedIncident._id, 'resolved')}
-                                        leftIcon={<CheckCircle size={16} />}
-                                    >
-                                        Mark Resolved
-                                    </Button>
+                        {}
+                        {showEmployees && (
+                            <div className="space-y-2 animate-in slide-in-from-top-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                {employees.length === 0 ? (
+                                    <div className="text-center py-8 bg-bg-main rounded-lg border border-border-main border-dashed">
+                                        <p className="text-text-muted">No team members found.</p>
+                                    </div>
+                                ) : (
+                                    employees.map(emp => (
+                                        <div key={emp._id} className="bg-bg-main p-3 rounded-lg border border-border-main flex items-center justify-between hover:border-primary/30 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded-full bg-bg-secondary flex items-center justify-center text-text-secondary text-xs font-bold">
+                                                    {emp.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-white text-sm">{emp.name}</div>
+                                                    <div className="text-xs text-text-muted">{emp.email}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <a href={`tel:${emp.phone}`} className="p-2 text-text-secondary hover:text-primary hover:bg-bg-secondary rounded-full transition-colors" title="Call">
+                                                    <Phone size={14} />
+                                                </a>
+                                                <a href={`mailto:${emp.email}`} className="p-2 text-text-secondary hover:text-primary hover:bg-bg-secondary rounded-full transition-colors" title="Email">
+                                                    <Mail size={14} />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
                             </div>
-                        </div>
+                        )}
                     </div>
-                )}
-            </div>
-
+                </CardContent>
+            </Card>
         </div>
     );
 }

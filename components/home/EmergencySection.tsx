@@ -12,24 +12,46 @@ export function EmergencySection() {
 
     const checkLocationAndSend = () => {
         setIsSOSLoading(true);
-        setShowConfirmModal(false); // Close confirm modal
+        setShowConfirmModal(false);
 
         navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
                 console.log("SOS Location:", position.coords);
-                // Simulate network delay
-                setTimeout(() => {
+                
+                try {
+                    const sessionId = localStorage.getItem("sessionId");
+                    const response = await fetch('/api/sos', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            location: {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            },
+                            sessionId: sessionId
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setShowSuccessModal(true);
+                    } else {
+                        alert("Failed to send SOS: " + (data.error || "Unknown error"));
+                    }
+                } catch (error) {
+                    console.error("SOS Error:", error);
+                    alert("Failed to send SOS due to network error.");
+                } finally {
                     setIsSOSLoading(false);
-                    setShowSuccessModal(true);
-                }, 2000);
+                }
             },
-            (error) => {
+            async (error) => {
                 console.error("Location error:", error);
-                // Fallback for location (still send alerting manual location needed)
-                setTimeout(() => {
-                    setIsSOSLoading(false);
-                    setShowSuccessModal(true);
-                }, 1000);
+                alert("Location access is required to send SOS.");
+                setIsSOSLoading(false);
             }
         );
     };
@@ -55,7 +77,6 @@ export function EmergencySection() {
 
     return (
         <section className="bg-bg-card py-24 border-t border-border-main relative overflow-hidden">
-            {/* Background Effects */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
                 <div className="absolute top-20 left-10 w-72 h-72 bg-alert-critical/5 rounded-full blur-[100px]"></div>
                 <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/5 rounded-full blur-[100px]"></div>
@@ -64,7 +85,6 @@ export function EmergencySection() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="flex flex-col space-y-20">
 
-                    {/* 1. SOS Button Section */}
                     <div className="w-full flex flex-col items-center justify-center text-center">
                         <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-alert-critical/10 text-alert-critical border border-alert-critical/20 mb-8">
                             <AlertOctagon size={16} className="animate-pulse" />
@@ -92,7 +112,6 @@ export function EmergencySection() {
                         </div>
                     </div>
 
-                    {/* 2. Emergency Contacts Grid */}
                     <div className="w-full">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl font-bold text-white mb-4">Essential Helplines</h2>
@@ -126,10 +145,8 @@ export function EmergencySection() {
                 </div>
             </div>
 
-            {/* Custom Modals using Portal */}
             {typeof document !== 'undefined' && createPortal(
                 <>
-                    {/* Confirmation Modal */}
                     {showConfirmModal && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 p-4">
                             <div className="bg-bg-card border-2 border-alert-critical max-w-sm w-full rounded-2xl p-6 shadow-2xl relative">
@@ -160,7 +177,6 @@ export function EmergencySection() {
                         </div>
                     )}
 
-                    {/* Success Modal */}
                     {showSuccessModal && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 p-4">
                             <div className="bg-bg-card border-2 border-status-resolved max-w-sm w-full rounded-2xl p-6 shadow-2xl relative">

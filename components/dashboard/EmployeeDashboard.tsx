@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Report } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 import { LayoutDashboard, MapPin, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const LiveMap = dynamic(() => import('@/components/map/LiveMap'), {
@@ -14,13 +15,13 @@ const LiveMap = dynamic(() => import('@/components/map/LiveMap'), {
 });
 
 export default function EmployeeDashboard() {
+    const { user } = useAuth();
     const [tasks, setTasks] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState<string | null>(null);
 
     useEffect(() => {
         fetchTasks();
-        // Poll for new tasks every 5 seconds
         const interval = setInterval(fetchTasks, 5000);
         return () => clearInterval(interval);
     }, []);
@@ -51,7 +52,6 @@ export default function EmployeeDashboard() {
                 return;
             }
 
-            // Use 'rejected' for the API (it handles both rejected and passed)
             const apiAction = action === 'passed' ? 'rejected' : action;
 
             const response = await fetch('/api/assignAccepted', {
@@ -73,7 +73,6 @@ export default function EmployeeDashboard() {
                 } else {
                     alert('Task passed. Responder will assign it to another employee.');
                 }
-                // Refresh tasks after a short delay to allow backend to process
                 setTimeout(() => {
                     fetchTasks();
                 }, 1000);
@@ -90,7 +89,6 @@ export default function EmployeeDashboard() {
 
     return (
         <div className="h-[calc(100vh-64px)] relative flex flex-col overflow-hidden bg-bg-main">
-            {/* Header */}
             <div className="p-4 border-b border-border-main bg-bg-card">
                 <h2 className="text-xl font-bold text-white flex items-center">
                     <LayoutDashboard className="mr-2 text-primary" /> Employee Dashboard
@@ -99,8 +97,7 @@ export default function EmployeeDashboard() {
             </div>
 
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                {/* Left Panel - Tasks List */}
-                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto">
+                <div className="w-full md:w-96 border-r border-border-main bg-bg-card overflow-y-auto no-scrollbar">
                     <div className="p-4 border-b border-border-main">
                         <h3 className="text-lg font-semibold text-text-primary">Assigned Tasks</h3>
                     </div>
@@ -177,13 +174,22 @@ export default function EmployeeDashboard() {
                     </div>
                 </div>
 
-                {/* Right - Map */}
                 <div className="flex-1 relative h-full min-h-[400px]">
                     {tasks.length > 0 ? (
                         <LiveMap
                             incidents={tasks}
                             interactive={true}
                             className="h-full w-full"
+                            userLocation={user?.location}
+                            selectedIncident={(() => {
+                                if (tasks.length > 0 && user?.location) {
+                                    return {
+                                        ...tasks[0],
+                                        employeeLocation: user.location
+                                    };
+                                }
+                                return null;
+                            })()}
                         />
                     ) : (
                         <div className="h-full w-full bg-bg-secondary flex items-center justify-center">
